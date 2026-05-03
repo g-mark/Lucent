@@ -29,7 +29,7 @@ final class AppLaunchScreenStore: Store<AppLaunchScreen> {
         do {
             for step in ["Initializing", "Connecting", "Loading"] {
                 await actions.send(.workingOn(step))
-                try await Task.sleep(for: .seconds(Double.random(in: 0.1...0.3)))
+                try await Task.sleep(for: .seconds(Double.random(in: 0.2...0.4)))
             }
         }
         catch {

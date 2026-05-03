@@ -6,13 +6,14 @@
 //
 
 import UIKit
+import SwiftUI
 import Lucent
 import WWLayout
 
+class AppLaunchViewController: UIViewController, LucentScreen {
 
-class AppLaunchViewController: UIViewController {
-
-    private var viewModel: ViewModel<AppLaunchScreen>
+    @Bindable
+    var viewModel: ViewModel<AppLaunchScreen>
 
     private var launchScreenView: UIView?
     private lazy var indicator = UIActivityIndicatorView(style: .large)
@@ -48,7 +49,11 @@ class AppLaunchViewController: UIViewController {
             .below(indicator, offset: 12)
 
         indicator.startAnimating()
-        statusText.text = viewModel.status
+
+        observe(\.status) { [weak self] status in
+            guard let self else { return }
+            statusText.text = status
+        }
 
         viewModel.send(action: .viewDidLoad)
     }
