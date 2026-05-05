@@ -22,6 +22,13 @@ let package = Package(
             dependencies: [
                 .product(name: "Evident", package: "Evident")
             ]
+        ),
+        .testTarget(
+            name: "LucentTests",
+            dependencies: [
+                "Lucent",
+                .product(name: "Evident", package: "Evident")
+            ]
         )
     ]
 )
