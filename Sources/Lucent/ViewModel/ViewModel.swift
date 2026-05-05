@@ -29,16 +29,16 @@ public final class ViewModel<Screen: ScreenDefinition> {
     private let _sendAction: @Sendable (ViewAction) -> Void
 
     @ObservationIgnored
-    private let _stateChange: @MainActor @Sendable (ViewState) async -> Void
+    private let _sendState: @MainActor @Sendable (ViewState) async -> Void
 
     init(
         state: ViewState,
         sendAction: @escaping @Sendable (ViewAction) -> Void,
-        stateChange: @escaping @MainActor @Sendable (ViewState) async -> Void
+        sendState: @escaping @MainActor @Sendable (ViewState) async -> Void
     ) {
         self.state = state
         self._sendAction = sendAction
-        self._stateChange = stateChange
+        self._sendState = sendState
 
         observeViewState()
     }
@@ -47,16 +47,9 @@ public final class ViewModel<Screen: ScreenDefinition> {
         _sendAction(action)
     }
 
-    // NOTE: we could add dynamicMemberLookup subcripts to more easily access state.
-
     /// Read access to any state property.
     public subscript<Value>(dynamicMember keyPath: KeyPath<ViewState, Value>) -> Value {
         state[keyPath: keyPath]
-    }
-
-    public subscript<Value>(dynamicMember keyPath: WritableKeyPath<ViewState, Value>) -> Value {
-        get { state[keyPath: keyPath] }
-        set { state[keyPath: keyPath] = newValue }
     }
 
     /// Monitor changes to `state`, and push those changes out to the owning Store.
@@ -66,7 +59,7 @@ public final class ViewModel<Screen: ScreenDefinition> {
         } onChange: { [weak self] in
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                await self._stateChange(self._state)
+                await self._sendState(self._state)
                 observeViewState()
             }
         }
@@ -80,7 +73,7 @@ extension ViewModel {
         .init(
             state: state,
             sendAction: { _ in },
-            stateChange: { _ in }
+            sendState: { _ in }
         )
     }
 }

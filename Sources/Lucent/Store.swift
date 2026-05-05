@@ -34,7 +34,7 @@ open class Store<Screen: ScreenDefinition> {
             sendAction: { [weak self] action in
                 self?.actions.dispatch(viewActionToScreenAction(action))
             },
-            stateChange: { @MainActor [weak self] viewState in
+            sendState: { @MainActor [weak self] viewState in
                 guard let self else { return }
                 self.state = stateProjection.toState(viewState, self.state)
                 await self.handleViewStateChange(viewState: viewState)
