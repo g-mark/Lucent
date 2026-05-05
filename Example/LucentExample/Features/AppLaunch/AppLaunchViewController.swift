@@ -7,6 +7,7 @@
 
 import UIKit
 import Lucent
+import WWLayout
 
 
 class AppLaunchViewController: UIViewController {
@@ -38,15 +39,13 @@ class AppLaunchViewController: UIViewController {
         launchScreenView.addSubview(indicator)
         launchScreenView.addSubview(statusText)
 
-        indicator.translatesAutoresizingMaskIntoConstraints = false
-        statusText.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            indicator.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
-            indicator.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 12),
+        indicator.layout
+            .center(in: imageView)
+            .below(imageView, offset: 12)
 
-            statusText.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
-            statusText.topAnchor.constraint(equalTo: indicator.bottomAnchor, constant: 12)
-        ])
+        statusText.layout
+            .center(in: imageView)
+            .below(indicator, offset: 12)
 
         indicator.startAnimating()
         statusText.text = viewModel.status
@@ -60,12 +59,9 @@ class AppLaunchViewController: UIViewController {
 
         addChild(launchController)
         view.addSubview(launchController.view)
-        NSLayoutConstraint.activate([
-            view.topAnchor.constraint(equalTo: launchController.view.topAnchor),
-            view.bottomAnchor.constraint(equalTo: launchController.view.bottomAnchor),
-            view.leadingAnchor.constraint(equalTo: launchController.view.leadingAnchor),
-            view.trailingAnchor.constraint(equalTo: launchController.view.trailingAnchor),
-        ])
+
+        launchController.view.layout.fill(view)
+        
         launchController.didMove(toParent: self)
 
         launchScreenView = launchController.view
