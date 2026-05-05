@@ -15,11 +15,10 @@ struct ObservationTokenTests {
 
     @MainActor
     @Test func tokenRunsImmediatelyAndTracksChanges() async throws {
-        let owner = NSObject()
         let model = ObservableIntModel(value: 1)
         let values = Recorder<Int>()
 
-        let token = ObservationToken(owner: owner, model: model) { model in
+        let token = ObservationToken(model: model) { model in
             let value = model.value
             Task {
                 await values.append(value)

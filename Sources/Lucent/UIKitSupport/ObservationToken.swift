@@ -16,16 +16,13 @@ import Observation
 @MainActor
 internal final class ObservationToken<Model: AnyObject>: NSObject {
 
-    private weak var owner: NSObject?
     private let model: Model
     private let apply: @MainActor (Model) -> Void
 
     init(
-        owner: NSObject,
         model: Model,
         apply: @escaping @MainActor (Model) -> Void
     ) {
-        self.owner = owner
         self.model = model
         self.apply = apply
         super.init()

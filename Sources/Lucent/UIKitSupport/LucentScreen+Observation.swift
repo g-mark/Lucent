@@ -20,7 +20,7 @@ extension LucentScreen where Self: NSObject {
     ///     }
     ///
     public func observe<Value>(
-        _ keyPath: WritableKeyPath<Module.ViewState, Value>,
+        _ keyPath: KeyPath<Module.ViewState, Value>,
         apply: @escaping @MainActor (Value) -> Void
     ) {
         observe(viewModel) { viewModel in
@@ -37,7 +37,7 @@ extension LucentScreen where Self: NSObject {
     ///     }
     ///
     public func observe<Value: Equatable>(
-        _ keyPath: WritableKeyPath<Module.ViewState, Value>,
+        _ keyPath: KeyPath<Module.ViewState, Value>,
         apply: @escaping @MainActor (Value) -> Void
     ) {
         observe(viewModel) { viewModel in
@@ -70,7 +70,7 @@ extension LucentScreen where Self: NSObject {
         apply: @escaping @MainActor (Model) -> Void
     ) {
         holdReference(
-            to: ObservationToken(owner: self, model: model, apply: apply)
+            to: ObservationToken(model: model, apply: apply)
         )
     }
 }
