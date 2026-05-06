@@ -17,23 +17,20 @@ struct NSObjectObserveTests {
     @Test func observeRunsImmediatelyAndTracksChanges() async throws {
         let object = NSObject()
         let model = ObservableIntModel(value: 1)
-        let values = Recorder<Int>()
+        var values: [Int] = []
 
         object.observe(identifier: "value") {
-            let value = model.value
-            Task {
-                await values.append(value)
-            }
+            values.append(model.value)
         }
 
         try await eventually {
-            await values.values == [1]
+            values == [1]
         }
 
         model.value = 2
 
         try await eventually {
-            await values.values == [1, 2]
+            values == [1, 2]
         }
     }
 
@@ -42,38 +39,32 @@ struct NSObjectObserveTests {
         let object = NSObject()
         let firstModel = ObservableIntModel(value: 1)
         let secondModel = ObservableIntModel(value: 10)
-        let firstValues = Recorder<Int>()
-        let secondValues = Recorder<Int>()
+        var firstValues: [Int] = []
+        var secondValues: [Int] = []
 
         object.observe(identifier: "value") {
-            let value = firstModel.value
-            Task {
-                await firstValues.append(value)
-            }
+            firstValues.append(firstModel.value)
         }
 
         try await eventually {
-            await firstValues.values == [1]
+            firstValues == [1]
         }
 
         object.observe(identifier: "value") {
-            let value = secondModel.value
-            Task {
-                await secondValues.append(value)
-            }
+            secondValues.append(secondModel.value)
         }
 
         try await eventually {
-            await secondValues.values == [10]
+            secondValues == [10]
         }
 
         firstModel.value = 2
         secondModel.value = 11
 
         try await eventually {
-            await secondValues.values == [10, 11]
+            secondValues == [10, 11]
         }
-        #expect(await firstValues.values == [1])
+        #expect(firstValues == [1])
     }
 }
 

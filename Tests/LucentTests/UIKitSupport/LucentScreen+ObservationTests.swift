@@ -21,22 +21,20 @@ struct LucentScreenObservationTests {
                 sendState: { _ in }
             )
         )
-        let values = Recorder<UIKitObservationScreen.ViewState>()
+        var values: [UIKitObservationScreen.ViewState] = []
 
         screen.observe { viewState in
-            Task {
-                await values.append(viewState)
-            }
+            values.append(viewState)
         }
 
         try await eventually {
-            await values.values == [.init(count: 1, title: "Initial")]
+            values == [.init(count: 1, title: "Initial")]
         }
 
         screen.viewModel.state = .init(count: 2, title: "Updated")
 
         try await eventually {
-            await values.values == [
+            values == [
                 .init(count: 1, title: "Initial"),
                 .init(count: 2, title: "Updated")
             ]
@@ -52,22 +50,20 @@ struct LucentScreenObservationTests {
                 sendState: { _ in }
             )
         )
-        let values = Recorder<String>()
+        var values: [String] = []
 
         screen.observe(\.title) { title in
-            Task {
-                await values.append(title)
-            }
+            values.append(title)
         }
 
         try await eventually {
-            await values.values == ["Initial"]
+            values == ["Initial"]
         }
 
         screen.viewModel.state = .init(count: 2, title: "Updated")
 
         try await eventually {
-            await values.values == ["Initial", "Updated"]
+            values == ["Initial", "Updated"]
         }
     }
 

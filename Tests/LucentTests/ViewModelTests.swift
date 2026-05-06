@@ -27,13 +27,11 @@ struct ViewModelTests {
 
     @MainActor
     @Test func sendsActionsToHandler() async throws {
-        let actions = Recorder<ViewModelTestScreen.ViewAction>()
+        let actions = LockedRecorder<ViewModelTestScreen.ViewAction>()
         let viewModel = ViewModel<ViewModelTestScreen>(
             state: .init(count: 0, title: "Initial"),
             sendAction: { action in
-                Task {
-                    await actions.append(action)
-                }
+                actions.append(action)
             },
             sendState: { _ in }
         )
@@ -42,7 +40,7 @@ struct ViewModelTests {
         viewModel.send(action: .submit("Done"))
 
         try await eventually {
-            await actions.values == [.increment, .submit("Done")]
+            actions.values == [.increment, .submit("Done")]
         }
     }
 
