@@ -41,6 +41,7 @@ struct ScreenTests {
         screen.observe { output in
             await outputs.append(output)
         }
+        await allowStoreObserversToRegister()
 
         store.viewModel.send(action: .submit("Done"))
 

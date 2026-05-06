@@ -178,9 +178,3 @@ private final class TestStore: Store<TestScreen> {
         }
     }
 }
-
-private func allowStoreObserversToRegister() async {
-    for _ in 0..<10 {
-        await Task.yield()
-    }
-}
