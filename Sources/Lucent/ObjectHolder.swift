@@ -2,7 +2,7 @@
 //  ObjectHolder.swift
 //  Lucent
 //
-//  Created by Steven Grosmark on 6/5/19.
+//  Created by Steven Grosmark on 4/4/26.
 //
 
 import Foundation
@@ -10,8 +10,8 @@ import Foundation
 
 /// Objects that can hold strong references to other objects
 protocol ObjectHolder: AnyObject {
-    func holdReference(to object: AnyObject)
-    func releaseReference(to object: AnyObject)
+    @MainActor func holdReference(to object: AnyObject)
+    @MainActor func releaseReference(to object: AnyObject)
 }
 
 extension NSObject: @MainActor ObjectHolder { }
