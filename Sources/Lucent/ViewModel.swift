@@ -5,8 +5,8 @@
 //  Created by Steven Grosmark on 3/7/26.
 //
 
+import Foundation
 import SwiftUI
-import Evident
 
 
 /// Access to screen state and actions specifically for a view.
@@ -23,24 +23,32 @@ public final class ViewModel<Screen: ScreenDefinition> {
     public typealias ViewState = Screen.ViewState
     public typealias ViewAction = Screen.ViewAction
 
-    public var state: ViewState
+    public var state: ViewState {
+        didSet {
+            handleStateChange(from: oldValue, to: state)
+        }
+    }
+
+    /// The `ViewModel` holds all observation closures:
+    /// - The internal one to send implicit state changes (view Bindings) back to the store; and
+    /// - any observations registered in a `Store` subclass' `setUpViewStateObservation`.
+    @ObservationIgnored
+    private var stateObservers: [UUID: @MainActor (ViewState, ViewState) -> Void] = [:]
 
     @ObservationIgnored
     private let _sendAction: @Sendable (ViewAction) -> Void
 
     @ObservationIgnored
-    private let _sendState: @MainActor @Sendable (ViewState) async -> Void
+    private let _sendState: @MainActor @Sendable (ViewState) -> Void
 
     init(
         state: ViewState,
         sendAction: @escaping @Sendable (ViewAction) -> Void,
-        sendState: @escaping @MainActor @Sendable (ViewState) async -> Void
+        sendState: @escaping @MainActor @Sendable (ViewState) -> Void
     ) {
         self.state = state
         self._sendAction = sendAction
         self._sendState = sendState
-
-        observeViewState()
     }
 
     public func send(action: ViewAction) {
@@ -52,17 +60,27 @@ public final class ViewModel<Screen: ScreenDefinition> {
         state[keyPath: keyPath]
     }
 
-    /// Monitor changes to `state`, and push those changes out to the owning Store.
-    private func observeViewState() {
-        withObservationTracking {
-            _ = state
-        } onChange: { [weak self] in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                await self._sendState(self._state)
-                observeViewState()
-            }
+    private func handleStateChange(from oldState: ViewState, to newState: ViewState) {
+        _sendState(newState)
+        notifyStateObservers(oldState: oldState, newState: newState)
+    }
+
+    private func notifyStateObservers(oldState: ViewState, newState: ViewState) {
+        let observers = Array(stateObservers.values)
+        for observer in observers {
+            observer(oldState, newState)
         }
+    }
+
+    internal func addStateObserver(
+        identifier: UUID,
+        onChange: @escaping @MainActor (ViewState, ViewState) -> Void
+    ) {
+        stateObservers[identifier] = onChange
+    }
+
+    internal func removeStateObserver(identifier: UUID) {
+        stateObservers[identifier] = nil
     }
 }
 

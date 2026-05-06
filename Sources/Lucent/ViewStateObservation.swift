@@ -1,42 +1,52 @@
 //
-//  LucentScreen+Observation.swift
+//  ViewStateObservation.swift
 //  Lucent
 //
-//  Created by Steven Grosmark on 5/3/26.
+//  Created by Steven Grosmark on 5/5/26.
 //
 
 import Foundation
 
 
+/// Store-facing access to view-state observation.
+///
+/// Observations last the lifetime of the `Store` / `ViewModel`.
 @MainActor
-extension LucentScreen where Self: NSObject {
+public struct ViewStateObservation<Screen: ScreenDefinition> {
+    public typealias ViewState = Screen.ViewState
+
+    private let viewModel: ViewModel<Screen>
+
+    internal init(viewModel: ViewModel<Screen>) {
+        self.viewModel = viewModel
+    }
 
     /// Observe (non-`Equatable`) view state, receiving both old and new values.
     ///
     /// Calls the handler immediately with current state and `nil` old value,
     /// then every subsequent time the view state is **set**.
     public func observe(
-        apply: @escaping @MainActor (Module.ViewState?, Module.ViewState) -> Void
+        apply: @escaping @MainActor (ViewState?, ViewState) -> Void
     ) {
         _observe(apply: apply)
     }
 
     fileprivate func _observe(
-        apply: @escaping @MainActor (Module.ViewState?, Module.ViewState) -> Void
+        apply: @escaping @MainActor (ViewState?, ViewState) -> Void
     ) {
         viewModel.addStateObserver(identifier: UUID(), onChange: apply)
         apply(nil, viewModel.state)
     }
 }
 
-extension LucentScreen where Self: NSObject, Module.ViewState: Equatable {
+extension ViewStateObservation where ViewState: Equatable {
 
     /// Observe `Equatable` view state changes, receiving both old and new values.
     ///
     /// Calls the handler immediately with the current state (and `nil` old value),
     /// then on every subsequent value change.
     public func observe(
-        apply: @escaping @MainActor (Module.ViewState?, Module.ViewState) -> Void
+        apply: @escaping @MainActor (ViewState?, ViewState) -> Void
     ) {
         _observe { oldState, newState in
             if oldState != newState {
@@ -49,7 +59,7 @@ extension LucentScreen where Self: NSObject, Module.ViewState: Equatable {
     ///
     /// Calls the handler immediately with the current state, then on every subsequent value change.
     public func observe(
-        apply: @escaping @MainActor (Module.ViewState) -> Void
+        apply: @escaping @MainActor (ViewState) -> Void
     ) {
         observe { _, viewState in
             apply(viewState)
@@ -57,14 +67,14 @@ extension LucentScreen where Self: NSObject, Module.ViewState: Equatable {
     }
 }
 
-extension LucentScreen where Self: NSObject {
+extension ViewStateObservation {
 
     /// Observe (non-`Equatable`) view state.
     ///
     /// Calls the handler immediately with current state (and `nil` old value),
     /// then every subsequent time the view state is **set**.
     public func observe(
-        apply: @escaping @MainActor (Module.ViewState) -> Void
+        apply: @escaping @MainActor (ViewState) -> Void
     ) {
         observe { _, viewState in
             apply(viewState)
@@ -76,7 +86,7 @@ extension LucentScreen where Self: NSObject {
     /// Calls the handler immediately with the current value (and `nil` old value),
     /// then every subsequent time the view state is **set**.
     public func observe<Value>(
-        _ keyPath: KeyPath<Module.ViewState, Value>,
+        _ keyPath: KeyPath<ViewState, Value>,
         apply: @escaping @MainActor (Value?, Value) -> Void
     ) {
         _observe { oldState, viewState in
@@ -89,7 +99,7 @@ extension LucentScreen where Self: NSObject {
     /// Calls the handler immediately with the current value (and `nil` old value),
     /// then every subsequent time the value changes.
     public func observe<Value: Equatable>(
-        _ keyPath: KeyPath<Module.ViewState, Value>,
+        _ keyPath: KeyPath<ViewState, Value>,
         apply: @escaping @MainActor (Value?, Value) -> Void
     ) {
         _observe { oldState, viewState in
@@ -105,7 +115,7 @@ extension LucentScreen where Self: NSObject {
     ///
     /// Calls the handler immediately with the current value, then again every time the view state is **set**.
     public func observe<Value>(
-        _ keyPath: KeyPath<Module.ViewState, Value>,
+        _ keyPath: KeyPath<ViewState, Value>,
         apply: @escaping @MainActor (Value) -> Void
     ) {
         _observe { _, viewState in
@@ -117,7 +127,7 @@ extension LucentScreen where Self: NSObject {
     ///
     /// Calls the handler immediately with the current value, then again every time the value changes.
     public func observe<Value: Equatable>(
-        _ keyPath: KeyPath<Module.ViewState, Value>,
+        _ keyPath: KeyPath<ViewState, Value>,
         apply: @escaping @MainActor (Value) -> Void
     ) {
         _observe { oldState, viewState in

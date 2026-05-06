@@ -9,15 +9,14 @@ import SwiftUI
 import UIKit
 
 
-@available(iOS 17.0, *)
-public extension UISlider {
+extension UISlider {
 
-    convenience init(value binding: Binding<Float>) {
+    public convenience init(value binding: Binding<Float>) {
         self.init()
         bind(value: binding)
     }
 
-    func bind(value binding: Binding<Float>) {
+    public func bind(value binding: Binding<Float>) {
         attach(
             binding: binding,
             get: { [weak self] in self?.value ?? 0 },

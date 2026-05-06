@@ -9,15 +9,14 @@ import SwiftUI
 import UIKit
 
 
-@available(iOS 17.0, *)
-public extension UISegmentedControl {
+extension UISegmentedControl {
 
-    convenience init(items: [Any], selectedSegmentIndex binding: Binding<Int>) {
+    public convenience init(items: [Any], selectedSegmentIndex binding: Binding<Int>) {
         self.init(items: items)
         bind(selectedSegmentIndex: binding)
     }
 
-    func bind(selectedSegmentIndex binding: Binding<Int>) {
+    public func bind(selectedSegmentIndex binding: Binding<Int>) {
         attach(
             binding: binding,
             get: { [weak self] in self?.selectedSegmentIndex ?? UISegmentedControl.noSegment },

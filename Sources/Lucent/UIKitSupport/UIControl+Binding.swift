@@ -9,7 +9,6 @@ import UIKit
 import SwiftUI
 
 
-@available(iOS 17.0, *)
 extension UIControl {
 
     /// Binds an `Equatable` property of this control to a SwiftUI

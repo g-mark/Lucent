@@ -9,15 +9,14 @@ import UIKit
 import SwiftUI
 
 
-@available(iOS 17.0, *)
-public extension UITextView {
+extension UITextView {
 
-    convenience init(text binding: Binding<String>) {
+    public convenience init(text binding: Binding<String>) {
         self.init()
         bind(text: binding)
     }
 
-    func bind(text binding: Binding<String>) {
+    public func bind(text binding: Binding<String>) {
         // model -> view
         observe(identifier: "Lucent.UITextView.binding") { [weak self] in
             guard let self else { return }

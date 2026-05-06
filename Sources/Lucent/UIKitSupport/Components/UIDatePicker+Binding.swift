@@ -9,15 +9,14 @@ import SwiftUI
 import UIKit
 
 
-@available(iOS 17.0, *)
-public extension UIDatePicker {
+extension UIDatePicker {
 
-    convenience init(value binding: Binding<Date>) {
+    public convenience init(value binding: Binding<Date>) {
         self.init()
         bind(value: binding)
     }
 
-    func bind(value binding: Binding<Date>) {
+    public func bind(value binding: Binding<Date>) {
         attach(
             binding: binding,
             get: { [weak self] in self?.date ?? Date() },

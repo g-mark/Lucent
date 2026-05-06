@@ -9,15 +9,15 @@ import SwiftUI
 import UIKit
 
 
-@available(iOS 17.0, *)
-public extension UIPageControl {
+extension UIPageControl {
 
-    convenience init(currentPage binding: Binding<Int>) {
+    public convenience init(currentPage binding: Binding<Int>, numberOfPages: Int = 0) {
         self.init()
+        self.numberOfPages = numberOfPages
         bind(currentPage: binding)
     }
 
-    func bind(currentPage binding: Binding<Int>) {
+    public func bind(currentPage binding: Binding<Int>) {
         attach(
             binding: binding,
             get: { [weak self] in self?.currentPage ?? 0 },

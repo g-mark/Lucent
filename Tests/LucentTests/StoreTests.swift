@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Evident
 import Testing
 @testable import Lucent
 
@@ -145,11 +144,12 @@ private enum TestScreen: ScreenDefinition {
 @MainActor
 private final class TestStore: Store<TestScreen> {
     let observedViewStates = Recorder<TestScreen.ViewState>()
-    private var viewStateObservation: AnyCancellableAsync?
 
-    override func setUpViewStateObservation(viewState: any ObservableValue<TestScreen.ViewState>) {
-        viewStateObservation = viewState.observe(\.self) { [observedViewStates] _, viewState in
-            await observedViewStates.append(viewState)
+    override func setUpViewStateObservation(viewState: ViewStateObservation<TestScreen>) {
+        viewState.observe { [observedViewStates] viewState in
+            Task {
+                await observedViewStates.append(viewState)
+            }
         }
     }
 

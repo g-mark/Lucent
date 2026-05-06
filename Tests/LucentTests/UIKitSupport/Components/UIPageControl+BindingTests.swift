@@ -14,6 +14,35 @@ import UIKit
 @Suite("UIPageControl+Binding")
 struct UIPageControlBindingTests {
 
+    // Note: `currentPage` is zero-based
+
+    @MainActor
+    @Test func bindingInitializerMirrorsInitialValue() {
+        let model = ObservableValueModel(value: 2)
+        let control = UIPageControl(currentPage: binding(to: model))
+
+        #expect(control.numberOfPages == 0)
+        #expect(control.currentPage == 0)
+    }
+
+    @MainActor
+    @Test func bindingInitializerMirrorsInitialValueClamped() {
+        let model = ObservableValueModel(value: 2)
+        let control = UIPageControl(currentPage: binding(to: model), numberOfPages: 2)
+
+        #expect(control.numberOfPages == 2)
+        #expect(control.currentPage == 1)
+    }
+
+    @MainActor
+    @Test func bindingInitializerConfiguresNumberOfPagesBeforeMirroringInitialValue() {
+        let model = ObservableValueModel(value: 2)
+        let control = UIPageControl(currentPage: binding(to: model), numberOfPages: 5)
+
+        #expect(control.numberOfPages == 5)
+        #expect(control.currentPage == 2)
+    }
+
     @MainActor
     @Test func bindingMirrorsBindingAndWritesControlChangesBack() async throws {
         let model = ObservableValueModel(value: 1)

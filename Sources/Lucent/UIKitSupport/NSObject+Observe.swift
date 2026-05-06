@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 
-@available(iOS 17.0, *)
 extension NSObject {
 
     /// Runs `apply` immediately, then re-runs it whenever any observable
@@ -20,7 +19,7 @@ extension NSObject {
     /// You can call this multiple times on the same object to register
     /// multiple independent observations.
     /// If an observation is already registered with the same `identifier`, then
-    /// the old abservation will stop, and be released.
+    /// the old observation will stop, and be released.
     @MainActor
     internal func observe(identifier: String, apply: @escaping @MainActor () -> Void) {
         let observer = Observer(apply: apply)

@@ -5,6 +5,7 @@
 //  Created by Steven Grosmark on 5/5/26.
 //
 
+import Foundation
 import Testing
 @testable import Lucent
 
@@ -46,21 +47,59 @@ struct ViewModelTests {
     }
 
     @MainActor
-    @Test func sendsStateChangesToHandler() async throws {
-        let states = Recorder<ViewModelTestScreen.ViewState>()
+    @Test func sendsStateChangesToHandler() {
+        var states: [ViewModelTestScreen.ViewState] = []
         let viewModel = ViewModel<ViewModelTestScreen>(
             state: .init(count: 0, title: "Initial"),
             sendAction: { _ in },
             sendState: { state in
-                await states.append(state)
+                states.append(state)
             }
         )
 
         viewModel.state = .init(count: 4, title: "Updated")
 
-        try await eventually {
-            await states.values == [.init(count: 4, title: "Updated")]
+        #expect(states == [.init(count: 4, title: "Updated")])
+    }
+
+    @MainActor
+    @Test func sendsRapidStateChangesToHandler() {
+        var states: [ViewModelTestScreen.ViewState] = []
+        let viewModel = ViewModel<ViewModelTestScreen>(
+            state: .init(count: 0, title: "Initial"),
+            sendAction: { _ in },
+            sendState: { state in
+                states.append(state)
+            }
+        )
+
+        viewModel.state = .init(count: 1, title: "Middle")
+        viewModel.state = .init(count: 2, title: "Updated")
+
+        #expect(states == [
+            .init(count: 1, title: "Middle"),
+            .init(count: 2, title: "Updated")
+        ])
+    }
+
+    @MainActor
+    @Test func removedStateObserverDoesNotReceiveStateChanges() {
+        var states: [ViewModelTestScreen.ViewState] = []
+        let viewModel = ViewModel<ViewModelTestScreen>(
+            state: .init(count: 0, title: "Initial"),
+            sendAction: { _ in },
+            sendState: { _ in }
+        )
+        let identifier = UUID()
+
+        viewModel.addStateObserver(identifier: identifier) { _, state in
+            states.append(state)
         }
+        viewModel.removeStateObserver(identifier: identifier)
+
+        viewModel.state = .init(count: 1, title: "Updated")
+
+        #expect(states == [])
     }
 
     @MainActor

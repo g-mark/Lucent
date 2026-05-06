@@ -9,15 +9,14 @@ import SwiftUI
 import UIKit
 
 
-@available(iOS 17.0, *)
-public extension UIStepper {
+extension UIStepper {
 
-    convenience init(value binding: Binding<Double>) {
+    public convenience init(value binding: Binding<Double>) {
         self.init()
         bind(value: binding)
     }
 
-    func bind(value binding: Binding<Double>) {
+    public func bind(value binding: Binding<Double>) {
         attach(
             binding: binding,
             get: { [weak self] in self?.value ?? 0 },

@@ -8,7 +8,7 @@
 import SwiftUI
 import UIKit
 
-@available(iOS 17.0, *)
+
 extension UISwitch {
 
     /// Creates a switch whose `isOn` state is bound to a SwiftUI-style binding.
