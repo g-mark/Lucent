@@ -17,9 +17,11 @@ jobs:
           - ios: "17"
             runner: macos-14
             xcode: "16.2"
+            destination: "platform=iOS Simulator,OS=17.5,name=iPhone 15 Pro"
           - ios: latest
             runner: macos-latest
             xcode: default
+            destination: "platform=iOS Simulator,OS=latest,name=iPhone 17 Pro"
 
     steps:
       - name: Checkout
@@ -37,61 +39,15 @@ jobs:
           xcodebuild -version
           swift --version
 
-      - name: Select simulator
-        id: simulator
-        env:
-          IOS_TARGET: ${{ matrix.ios }}
+      - name: Show destination
         run: |
-          ruby <<'RUBY'
-          require "json"
-          require "open3"
-          require "rubygems"
-
-          target = ENV.fetch("IOS_TARGET")
-          json, stderr, status = Open3.capture3("xcrun", "simctl", "list", "devices", "available", "-j")
-          abort(stderr) unless status.success?
-
-          devices_by_runtime = JSON.parse(json).fetch("devices")
-
-          runtimes = devices_by_runtime.keys
-            .select { |runtime| runtime.start_with?("com.apple.CoreSimulator.SimRuntime.iOS-") }
-            .map do |runtime|
-              version = runtime.split("iOS-", 2).last.tr("-", ".")
-              [runtime, version, Gem::Version.new(version)]
-            end
-
-          selected = if target == "latest"
-            runtimes.max_by { |_, _, version| version }
-          else
-            runtimes
-              .select { |_, _, version| version.segments.first == target.to_i }
-              .max_by { |_, _, version| version }
-          end
-
-          abort("No available iOS #{target} simulator runtime found") unless selected
-
-          runtime, version = selected
-          devices = devices_by_runtime.fetch(runtime)
-          device = devices.find { |candidate| candidate["name"].start_with?("iPhone") } || devices.first
-          abort("No available simulator device found for iOS #{version}") unless device
-
-          File.open(ENV.fetch("GITHUB_OUTPUT"), "a") do |output|
-            output.puts("ios_version=#{version}")
-            output.puts("device_name=#{device.fetch("name")}")
-            output.puts("device_id=#{device.fetch("udid")}")
-          end
-          RUBY
-
-      - name: Show selected simulator
-        run: |
-          echo "iOS ${{ steps.simulator.outputs.ios_version }}"
-          echo "${{ steps.simulator.outputs.device_name }} (${{ steps.simulator.outputs.device_id }})"
+          echo "${{ matrix.destination }}"
 
       - name: Run tests
         run: |
           xcodebuild \
             -scheme Lucent \
-            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.device_id }}' \
+            -destination '${{ matrix.destination }}' \
             -derivedDataPath "$RUNNER_TEMP/LucentDerivedData" \
             test \
             CODE_SIGNING_ALLOWED=NO
