@@ -15,8 +15,8 @@ jobs:
       matrix:
         include:
           - ios: "17"
-            runner: macos-15
-            xcode: "16.4"
+            runner: macos-14
+            xcode: "16.2"
           - ios: latest
             runner: macos-latest
             xcode: default
