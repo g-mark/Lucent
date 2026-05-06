@@ -41,18 +41,17 @@ class AppLaunchViewController: UIViewController, LucentScreen {
         launchScreenView.addSubview(statusText)
 
         indicator.layout
-            .center(in: imageView)
+            .centerX(to: imageView)
             .below(imageView, offset: 12)
 
         statusText.layout
-            .center(in: imageView)
+            .centerX(to: imageView)
             .below(indicator, offset: 12)
 
         indicator.startAnimating()
 
-        observe(\.status) { [weak self] status in
-            guard let self else { return }
-            statusText.text = status
+        observe(\.status) { [weak statusText] status in
+            statusText?.text = status
         }
 
         viewModel.send(action: .viewDidLoad)
@@ -64,11 +63,8 @@ class AppLaunchViewController: UIViewController, LucentScreen {
 
         addChild(launchController)
         view.addSubview(launchController.view)
-
         launchController.view.layout.fill(view)
-        
         launchController.didMove(toParent: self)
-
         launchScreenView = launchController.view
     }
 }

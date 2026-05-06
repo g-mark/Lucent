@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		B00B801F2FA95DFD00B35A67 /* WWLayout in Frameworks */ = {isa = PBXBuildFile; productRef = B00B801E2FA95DFD00B35A67 /* WWLayout */; };
+		B00B81C42FABB26900B35A67 /* Evident in Frameworks */ = {isa = PBXBuildFile; productRef = B00B81C32FABB26900B35A67 /* Evident */; };
+		B00B81C72FABB29500B35A67 /* Lucent in Frameworks */ = {isa = PBXBuildFile; productRef = B00B81C62FABB29500B35A67 /* Lucent */; };
 		B067F7C32F914FA000FBD28C /* Evident in Frameworks */ = {isa = PBXBuildFile; productRef = B067F7C22F914FA000FBD28C /* Evident */; };
 		B0BE31392F8FCE8600CB211A /* Lucent in Frameworks */ = {isa = PBXBuildFile; productRef = B0BE31382F8FCE8600CB211A /* Lucent */; };
 /* End PBXBuildFile section */
@@ -58,8 +60,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B00B81C72FABB29500B35A67 /* Lucent in Frameworks */,
 				B067F7C32F914FA000FBD28C /* Evident in Frameworks */,
 				B00B801F2FA95DFD00B35A67 /* WWLayout in Frameworks */,
+				B00B81C42FABB26900B35A67 /* Evident in Frameworks */,
 				B0BE31392F8FCE8600CB211A /* Lucent in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -115,6 +119,8 @@
 				B0BE31382F8FCE8600CB211A /* Lucent */,
 				B067F7C22F914FA000FBD28C /* Evident */,
 				B00B801E2FA95DFD00B35A67 /* WWLayout */,
+				B00B81C32FABB26900B35A67 /* Evident */,
+				B00B81C62FABB29500B35A67 /* Lucent */,
 			);
 			productName = LucentExample;
 			productReference = B0BE30E82F8FCA8C00CB211A /* LucentExample.app */;
@@ -172,9 +178,9 @@
 			mainGroup = B0BE30DF2F8FCA8C00CB211A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				B0BE31372F8FCE8600CB211A /* XCLocalSwiftPackageReference "../../Lucent" */,
-				B067F7C12F914FA000FBD28C /* XCLocalSwiftPackageReference "../../Evident" */,
 				B00B801D2FA95DFD00B35A67 /* XCRemoteSwiftPackageReference "wwlayout" */,
+				B00B81C22FABB26900B35A67 /* XCRemoteSwiftPackageReference "Evident" */,
+				B00B81C52FABB29500B35A67 /* XCRemoteSwiftPackageReference "Lucent" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B0BE30E92F8FCA8C00CB211A /* Products */;
@@ -491,17 +497,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		B067F7C12F914FA000FBD28C /* XCLocalSwiftPackageReference "../../Evident" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Evident;
-		};
-		B0BE31372F8FCE8600CB211A /* XCLocalSwiftPackageReference "../../Lucent" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Lucent;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		B00B801D2FA95DFD00B35A67 /* XCRemoteSwiftPackageReference "wwlayout" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -511,6 +506,22 @@
 				minimumVersion = 0.8.2;
 			};
 		};
+		B00B81C22FABB26900B35A67 /* XCRemoteSwiftPackageReference "Evident" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/g-mark/Evident";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
+		B00B81C52FABB29500B35A67 /* XCRemoteSwiftPackageReference "Lucent" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/g-mark/Lucent";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -518,6 +529,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B00B801D2FA95DFD00B35A67 /* XCRemoteSwiftPackageReference "wwlayout" */;
 			productName = WWLayout;
+		};
+		B00B81C32FABB26900B35A67 /* Evident */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B00B81C22FABB26900B35A67 /* XCRemoteSwiftPackageReference "Evident" */;
+			productName = Evident;
+		};
+		B00B81C62FABB29500B35A67 /* Lucent */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B00B81C52FABB29500B35A67 /* XCRemoteSwiftPackageReference "Lucent" */;
+			productName = Lucent;
 		};
 		B067F7C22F914FA000FBD28C /* Evident */ = {
 			isa = XCSwiftPackageProductDependency;
