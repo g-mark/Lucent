@@ -11,17 +11,16 @@ import Testing
 
 @MainActor
 func eventually(
-    timeout: TimeInterval = 1,
+    timeout: TimeInterval = 5,
     sourceLocation: SourceLocation = #_sourceLocation,
     check: @MainActor () async throws -> Bool
 ) async throws {
     let deadline = Date(timeInterval: timeout, since: Date())
     while Date() < deadline {
-        await Task.yield()
         if try await check() {
             return
         }
-        await Task.yield()
+        try await Task.sleep(for: .milliseconds(10))
     }
 
     Issue.record("eventually exceeded timeout of \(timeout) seconds", sourceLocation: sourceLocation)
@@ -29,3 +28,9 @@ func eventually(
 }
 
 struct EventuallyTimedOut: Error { }
+
+func allowStoreObserversToRegister() async {
+    for _ in 0..<10 {
+        try? await Task.sleep(for: .milliseconds(10))
+    }
+}

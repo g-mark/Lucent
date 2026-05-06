@@ -24,7 +24,6 @@ open class Store<Screen: ScreenDefinition> {
     private var state: State
     private let actions: MessageQueue<Action>
     private let outputs: MessageQueue<Output>
-    private let viewStateObservations: ObservableValueStore<Screen.ViewState>
 
     public private(set) lazy var viewModel: ViewModel<Screen> = {
         let stateProjection = Screen.viewStateProjection
@@ -37,7 +36,6 @@ open class Store<Screen: ScreenDefinition> {
             sendState: { @MainActor [weak self] viewState in
                 guard let self else { return }
                 self.state = stateProjection.toState(viewState, self.state)
-                await self.handleViewStateChange(viewState: viewState)
             }
         )
     }()
@@ -46,17 +44,14 @@ open class Store<Screen: ScreenDefinition> {
         self.state = state
         self.actions = MessageQueue<Action>()
         self.outputs = MessageQueue<Output>()
-        self.viewStateObservations = ObservableValueStore(initialValue: Screen.viewStateProjection.toViewState(state))
 
         actions.observe { [weak self] action in
             await self?.routeAction(action)
         }
 
-        setUpViewStateObservation(viewState: viewStateObservations)
-    }
-
-    private func handleViewStateChange(viewState: Screen.ViewState) async {
-        await viewStateObservations.set(value: viewState)
+        setUpViewStateObservation(
+            viewState: ViewStateObservation(viewModel: viewModel)
+        )
     }
 
     /// Observe outputs emitted by the screen
@@ -64,8 +59,8 @@ open class Store<Screen: ScreenDefinition> {
         outputs.observe(outputHandler)
     }
 
-    /// Opportunity for a Store to observe `ViewState` changes that happen in the view.
-    open func setUpViewStateObservation(viewState: any ObservableValue<Screen.ViewState>) {
+    /// Opportunity for a `Store` subclass to observe `ViewState` changes that happen in the view.
+    open func setUpViewStateObservation(viewState: ViewStateObservation<Screen>) {
 
     }
 

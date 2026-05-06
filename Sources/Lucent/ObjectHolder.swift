@@ -14,7 +14,7 @@ protocol ObjectHolder: AnyObject {
     @MainActor func releaseReference(to object: AnyObject)
 }
 
-extension NSObject: @MainActor ObjectHolder { }
+extension NSObject: ObjectHolder { }
 
 extension ObjectHolder {
 

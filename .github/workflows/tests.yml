@@ -1,0 +1,53 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: iOS ${{ matrix.ios }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ios: "17"
+            runner: macos-14
+            xcode: "16.2"
+            destination: "platform=iOS Simulator,OS=17.5,name=iPhone 15 Pro"
+          - ios: latest
+            runner: macos-latest
+            xcode: default
+            destination: "platform=iOS Simulator,OS=latest,name=iPhone 17 Pro"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        if: matrix.xcode != 'default'
+        env:
+          XCODE_VERSION: ${{ matrix.xcode }}
+        run: |
+          sudo xcode-select -switch "/Applications/Xcode_${XCODE_VERSION}.app"
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Show destination
+        run: |
+          echo "${{ matrix.destination }}"
+
+      - name: Run tests
+        run: |
+          xcodebuild \
+            -scheme Lucent \
+            -destination '${{ matrix.destination }}' \
+            -derivedDataPath "$RUNNER_TEMP/LucentDerivedData" \
+            test \
+            CODE_SIGNING_ALLOWED=NO
