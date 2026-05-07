@@ -85,4 +85,4 @@ public struct StateProjection<State: Sendable, ViewState: Sendable>: Sendable {
     public let toState: @Sendable (ViewState, State) -> State
 }
 
-public struct EmptyState { }
+public struct EmptyState: Sendable { }

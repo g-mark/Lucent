@@ -2,7 +2,7 @@
 //  Screen+NavigationTests.swift
 //  Lucent
 //
-//  Created by Codex on 5/6/26.
+//  Created by Steven Grosmark on 5/6/26.
 //
 
 import Testing
