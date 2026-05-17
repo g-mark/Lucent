@@ -9,19 +9,21 @@ on:
 jobs:
   test:
     name: iOS ${{ matrix.ios }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: macos-15 # as of 2026-05-17, same as macos-latest; macos-26 only has ios-26 simulators.
     strategy:
       fail-fast: false
       matrix:
+        # See https://github.com/actions/runner-images for images.
+        # Check what is labelled "macos-latest", and in each image what the "default" Xcode is.
+        # Latest & default are behind the bleeding edge.
+        # Lucent requires Swift 6.2, which means Xcode 26.
         include:
-          - ios: "17"
-            runner: macos-14
-            xcode: "16.2"
-            destination: "platform=iOS Simulator,OS=17.5,name=iPhone 15 Pro"
-          - ios: latest
-            runner: macos-latest
-            xcode: default
-            destination: "platform=iOS Simulator,OS=latest,name=iPhone 17 Pro"
+          - ios: "18.5"
+            xcode: "26.3"
+            destination: "platform=iOS Simulator,OS=18.5,name=iPhone 16 Pro"
+          - ios: "26.2"
+            xcode: "26.3"
+            destination: "platform=iOS Simulator,OS=26.2,name=iPhone 17 Pro"
 
     steps:
       - name: Checkout

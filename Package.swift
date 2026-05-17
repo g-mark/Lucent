@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 
 import PackageDescription
 
@@ -32,3 +32,12 @@ let package = Package(
         )
     ]
 )
+
+
+for target in package.targets {
+    var settings = target.swiftSettings ?? []
+    settings.append(contentsOf: [
+        .defaultIsolation(nil),
+    ])
+    target.swiftSettings = settings
+}
