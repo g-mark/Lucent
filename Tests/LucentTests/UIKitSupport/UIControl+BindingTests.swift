@@ -99,6 +99,7 @@ private func binding<Value>(to model: ObservableValueModel<Value>) -> Binding<Va
     )
 }
 
+@concurrent
 private func settleObservation() async {
     for _ in 0..<10 {
         await Task.yield()
