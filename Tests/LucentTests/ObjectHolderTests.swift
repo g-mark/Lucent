@@ -7,7 +7,7 @@
 
 import Foundation
 import Testing
-@testable import Lucent
+@testable import LucentCore
 
 @Suite("ObjectHolder")
 struct ObjectHolderTests {

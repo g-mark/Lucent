@@ -1,11 +1,13 @@
 // swift-tools-version: 6.2
 
 import PackageDescription
+import CompilerPluginSupport
 
 let package = Package(
     name: "Lucent",
     platforms: [
-        .iOS(.v17)
+        .iOS(.v17),
+        .macOS(.v13)
     ],
     products: [
         .library(
@@ -14,19 +16,36 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/g-mark/Evident", branch: "main")
+        .package(url: "https://github.com/g-mark/Evident", branch: "main"),
+        .package(url: "https://github.com/swiftlang/swift-syntax", from: "603.0.0")
     ],
     targets: [
         .target(
-            name: "Lucent",
+            name: "LucentCore",
             dependencies: [
                 .product(name: "Evident", package: "Evident")
+            ],
+            path: "Sources/Lucent"
+        ),
+        .target(
+            name: "Lucent",
+            dependencies: [
+                "LucentCore",
+                "LucentMacros"
+            ],
+            path: "Sources/LucentExports"
+        ),
+        .macro(
+            name: "LucentMacros",
+            dependencies: [
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax")
             ]
         ),
         .testTarget(
             name: "LucentTests",
             dependencies: [
-                "Lucent",
+                "LucentCore",
                 .product(name: "Evident", package: "Evident")
             ]
         )

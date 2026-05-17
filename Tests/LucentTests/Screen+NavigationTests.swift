@@ -7,7 +7,7 @@
 
 import Testing
 import UIKit
-@testable import Lucent
+import LucentCore
 
 @Suite("Screen+Navigation")
 struct ScreenNavigationTests {

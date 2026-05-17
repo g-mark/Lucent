@@ -10,7 +10,7 @@ import Observation
 import SwiftUI
 import Testing
 import UIKit
-@testable import Lucent
+import LucentCore
 
 @Suite("UITextView+Binding")
 struct UITextViewBindingTests {

@@ -31,7 +31,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 if let error {
                     print("error at app launch:", error)
                 }
-                // TODO: replace window.root with AppFlow
+
+                window.rootViewController = CounterScreen
+                    .create(initialState: .init())
+                    .viewController
             }
 
         window.rootViewController = screen.viewController
@@ -70,4 +73,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
 }
-
