@@ -29,6 +29,7 @@ func eventually(
 
 struct EventuallyTimedOut: Error { }
 
+@concurrent
 func allowStoreObserversToRegister() async {
     for _ in 0..<10 {
         try? await Task.sleep(for: .milliseconds(10))
