@@ -27,48 +27,46 @@ struct StoreTests {
 
         store.viewModel.send(action: .incrementTapped)
 
-        try await eventually {
-            store.viewModel.count == 4
-        }
+        try await store.observedViewStates.waitForValues([
+            .init(count: 3),
+            .init(count: 4)
+        ])
+        #expect(store.viewModel.count == 4)
     }
 
     @MainActor
     @Test func outputHandlersReceiveOutputsFromHandledActions() async throws {
         let store = TestStore(state: .init(count: 0, name: "initial"))
-        let outputs = Recorder<TestScreen.Output>()
+        let outputs = LockedRecorder<TestScreen.Output>()
 
         store.observe { output in
-            await outputs.append(output)
+            outputs.append(output)
         }
         await allowStoreObserversToRegister()
 
         store.viewModel.send(action: .submit("done"))
 
-        try await eventually {
-            await outputs.values == [.message("done")]
-        }
+        try await outputs.waitForValues([.message("done")])
     }
 
     @MainActor
     @Test func viewStateChangesUpdateStoreStateBeforeLaterActions() async throws {
         let store = TestStore(state: .init(count: 1, name: "preserved"))
-        let outputs = Recorder<TestScreen.Output>()
+        let outputs = LockedRecorder<TestScreen.Output>()
 
         store.observe { output in
-            await outputs.append(output)
+            outputs.append(output)
         }
         await allowStoreObserversToRegister()
 
         store.viewModel.state = .init(count: 7)
-        try await eventually {
-            await store.observedViewStates.values.contains(.init(count: 7))
+        try await store.observedViewStates.waitUntil {
+            $0.contains(.init(count: 7))
         }
 
         store.viewModel.send(action: .reportCount)
 
-        try await eventually {
-            await outputs.values == [.count(7)]
-        }
+        try await outputs.waitForValues([.count(7)])
     }
 
     @MainActor
@@ -78,9 +76,11 @@ struct StoreTests {
 
         store.viewModel.send(action: .startSideEffect(amount: 5))
 
-        try await eventually {
-            store.viewModel.count == 7
-        }
+        try await store.observedViewStates.waitForValues([
+            .init(count: 2),
+            .init(count: 7)
+        ])
+        #expect(store.viewModel.count == 7)
     }
 }
 
@@ -143,13 +143,11 @@ private enum TestScreen: ScreenDefinition {
 
 @MainActor
 private final class TestStore: Store<TestScreen> {
-    let observedViewStates = Recorder<TestScreen.ViewState>()
+    let observedViewStates = LockedRecorder<TestScreen.ViewState>()
 
     override func setUpViewStateObservation(viewState: ViewStateObservation<TestScreen>) {
         viewState.observe { [observedViewStates] viewState in
-            Task {
-                await observedViewStates.append(viewState)
-            }
+            observedViewStates.append(viewState)
         }
     }
 

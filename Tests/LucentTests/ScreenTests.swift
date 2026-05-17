@@ -36,18 +36,16 @@ struct ScreenTests {
     @Test func observeForwardsStoreOutputs() async throws {
         let store = ScreenTestStore(state: .init())
         let screen = Screen(viewController: UIViewController(), store: store)
-        let outputs = Recorder<ScreenTestModule.Output>()
+        let outputs = LockedRecorder<ScreenTestModule.Output>()
 
         screen.observe { output in
-            await outputs.append(output)
+            outputs.append(output)
         }
         await allowStoreObserversToRegister()
 
         store.viewModel.send(action: .submit("Done"))
 
-        try await eventually {
-            await outputs.values == [.message("Done")]
-        }
+        try await outputs.waitForValues([.message("Done")])
     }
 
     @MainActor

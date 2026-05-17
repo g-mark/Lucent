@@ -17,14 +17,15 @@ struct UISliderBindingTests {
     @MainActor
     @Test func bindingMirrorsBindingAndWritesControlChangesBack() async throws {
         let model = ObservableValueModel(value: Float(0.25))
-        let control = UISlider(value: binding(to: model))
+        let bindingReads = LockedRecorder<Float>()
+        let control = UISlider(value: binding(to: model) { bindingReads.append($0) })
 
+        try await bindingReads.waitForValue(0.25)
         #expect(control.value == 0.25)
 
         model.value = 0.5
-        try await eventually {
-            control.value == 0.5
-        }
+        try await bindingReads.waitForValue(0.5)
+        #expect(control.value == 0.5)
 
         control.value = 0.75
         control.sendActions(for: .valueChanged)
@@ -43,9 +44,16 @@ private final class ObservableValueModel<Value> {
 }
 
 @MainActor
-private func binding<Value>(to model: ObservableValueModel<Value>) -> Binding<Value> {
+private func binding<Value>(
+    to model: ObservableValueModel<Value>,
+    onRead: ((Value) -> Void)? = nil
+) -> Binding<Value> {
     Binding(
-        get: { model.value },
+        get: {
+            let value = model.value
+            onRead?(value)
+            return value
+        },
         set: { model.value = $0 }
     )
 }

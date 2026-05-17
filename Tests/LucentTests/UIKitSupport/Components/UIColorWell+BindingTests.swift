@@ -17,14 +17,17 @@ struct UIColorWellBindingTests {
     @MainActor
     @Test func bindingMirrorsBindingAndWritesControlChangesBack() async throws {
         let model = ObservableValueModel<UIColor?>(value: .red)
-        let control = UIColorWell(selectedColor: binding(to: model))
+        let bindingReads = LockedRecorder<String>()
+        let control = UIColorWell(selectedColor: binding(to: model) {
+            bindingReads.append(colorName($0))
+        })
 
+        try await bindingReads.waitForValue("red")
         #expect(control.selectedColor == .red)
 
         model.value = .blue
-        try await eventually {
-            control.selectedColor == .blue
-        }
+        try await bindingReads.waitForValue("blue")
+        #expect(control.selectedColor == .blue)
 
         control.selectedColor = .green
         control.sendActions(for: .valueChanged)
@@ -43,9 +46,25 @@ private final class ObservableValueModel<Value> {
 }
 
 @MainActor
-private func binding<Value>(to model: ObservableValueModel<Value>) -> Binding<Value> {
+private func binding<Value>(
+    to model: ObservableValueModel<Value>,
+    onRead: ((Value) -> Void)? = nil
+) -> Binding<Value> {
     Binding(
-        get: { model.value },
+        get: {
+            let value = model.value
+            onRead?(value)
+            return value
+        },
         set: { model.value = $0 }
     )
+}
+
+private func colorName(_ color: UIColor?) -> String {
+    switch color {
+    case .red: "red"
+    case .blue: "blue"
+    case .green: "green"
+    default: String(describing: color)
+    }
 }
