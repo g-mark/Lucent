@@ -20,10 +20,10 @@ jobs:
         include:
           - ios: "18.5"
             xcode: "26.3"
-            destination: "platform=iOS Simulator,OS=18.5,name=iPhone 16 Pro"
+            device: "iPhone 16 Pro"
           - ios: "26.2"
             xcode: "26.3"
-            destination: "platform=iOS Simulator,OS=26.2,name=iPhone 17 Pro"
+            device: "iPhone 17 Pro"
 
     steps:
       - name: Checkout
@@ -41,15 +41,27 @@ jobs:
           xcodebuild -version
           swift --version
 
-      - name: Show destination
+      - name: Create simulator
+        id: simulator
+        env:
+          DEVICE_NAME: ${{ matrix.device }}
+          IOS_VERSION: ${{ matrix.ios }}
         run: |
-          echo "${{ matrix.destination }}"
+          runtime="com.apple.CoreSimulator.SimRuntime.iOS-${IOS_VERSION//./-}"
+          simulator_name="Lucent CI ${DEVICE_NAME} iOS ${IOS_VERSION}"
+
+          xcrun simctl list runtimes available
+          udid="$(xcrun simctl create "$simulator_name" "$DEVICE_NAME" "$runtime")"
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
 
       - name: Run tests
         run: |
           xcodebuild \
             -scheme Lucent \
-            -destination '${{ matrix.destination }}' \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}' \
             -derivedDataPath "$RUNNER_TEMP/LucentDerivedData" \
             test \
             CODE_SIGNING_ALLOWED=NO
