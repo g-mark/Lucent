@@ -83,6 +83,14 @@ extension ScreenDefinition where ViewAction == Action {
 public struct StateProjection<State: Sendable, ViewState: Sendable>: Sendable {
     public let toViewState: @Sendable (State) -> ViewState
     public let toState: @Sendable (ViewState, State) -> State
+
+    public init(
+        toViewState: @escaping @Sendable (State) -> ViewState,
+        toState: @escaping @Sendable (ViewState, State) -> State
+    ) {
+        self.toViewState = toViewState
+        self.toState = toState
+    }
 }
 
 public struct EmptyState: Sendable { }

@@ -14,7 +14,7 @@ extension Screen {
     /// Push this screen onto a navigation stack.
     /// If there are no other screens on the stack, this screen will be the root, unanimated.
     @discardableResult
-    func push(onto navController: UINavigationController, animated: Bool) -> Self {
+    public func push(onto navController: UINavigationController, animated: Bool) -> Self {
         if navController.viewControllers.isEmpty {
             navController.viewControllers = [viewController]
         }
