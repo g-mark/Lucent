@@ -9,7 +9,7 @@ import Observation
 import SwiftUI
 import Testing
 import UIKit
-@testable import Lucent
+@testable import LucentCore
 
 @Suite("UIControl+Binding")
 struct UIControlBindingTests {

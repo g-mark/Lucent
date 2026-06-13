@@ -8,7 +8,7 @@
 import Foundation
 import Observation
 import Testing
-@testable import Lucent
+@testable import LucentCore
 
 @Suite("NSObject+Observe")
 struct NSObjectObserveTests {

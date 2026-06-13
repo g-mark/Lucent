@@ -7,7 +7,7 @@
 
 import Foundation
 import Testing
-@testable import Lucent
+import LucentCore
 
 @Suite("Store")
 struct StoreTests {
