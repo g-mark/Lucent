@@ -1,5 +1,5 @@
 //
-//  CounterViewController.swift
+//  CounterScreenViewController.swift
 //  LucentExample
 //
 //  Created by Steven Grosmark on 5/7/26.
@@ -10,7 +10,8 @@ import SwiftUI
 import UIKit
 import WWLayout
 
-final class CounterViewController: UIViewController, LucentScreen {
+
+final class CounterScreenViewController: UIViewController, LucentScreen {
 
     @Bindable
     var viewModel: ViewModel<CounterScreen>
@@ -48,7 +49,7 @@ final class CounterViewController: UIViewController, LucentScreen {
         countLabel.adjustsFontForContentSizeCategory = true
         countLabel.textAlignment = .center
 
-        decrementButton.configuration = .bordered()
+        decrementButton.configuration = .borderedProminent()
         decrementButton.setTitle("Decrement", for: .normal)
 
         incrementButton.configuration = .borderedProminent()
@@ -72,21 +73,22 @@ final class CounterViewController: UIViewController, LucentScreen {
         factButton.configuration = .bordered()
         factButton.setTitle("Get fact", for: .normal)
 
-        let contentStack = UIStackView(arrangedSubviews: [
-            countLabel,
-            buttonStack,
-            factLabel,
-            activityIndicator,
-            factButton
-        ])
-        contentStack.axis = .vertical
-        contentStack.alignment = .fill
-        contentStack.spacing = 16
+        let allViews = [countLabel, buttonStack, factButton, activityIndicator, factLabel]
+        view.addSubviews(allViews)
 
-        view.addSubview(contentStack)
-        contentStack.layout
-            .fillWidth(of: .margins, maximum: 420)
-            .center(in: .safeArea)
+        buttonStack.layout.bottom(to: view, edge: .center)
+        countLabel.layout.bottom(to: buttonStack, edge: .top, offset: -16)
+        factButton.layout
+            .below(buttonStack, offset: 16)
+            .width(to: buttonStack.layout.width)
+        factLabel.layout
+            .below(factButton, offset: 16)
+            .width(to: view.layout.width - 32)
+        activityIndicator.layout.below(factButton, offset: 16)
+
+        allViews.forEach {
+            $0.layout.centerX(to: view)
+        }
     }
 
     private func configureActions() {
@@ -130,20 +132,6 @@ final class CounterViewController: UIViewController, LucentScreen {
     }
 }
 
-extension UIButton {
-
-    fileprivate func onTap<Module: ScreenDefinition>(send action: Module.ViewAction, to viewModel: ViewModel<Module>) {
-        addAction(
-            UIAction { [weak viewModel] _ in
-                Task { @MainActor in
-                    viewModel?.send(action: action)
-                }
-            },
-            for: .touchUpInside
-        )
-    }
-}
-
 extension String? {
 
     fileprivate var notEmptyOrNil: Bool {
@@ -151,5 +139,16 @@ extension String? {
             return true
         }
         return false
+    }
+}
+
+extension UIView {
+
+    fileprivate func addSubviews(_ views: UIView ...) {
+        addSubviews(views)
+    }
+
+    fileprivate func addSubviews(_ views: [UIView]) {
+        views.forEach(addSubview)
     }
 }
