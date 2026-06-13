@@ -62,7 +62,7 @@ final class LoginScreenStore: Store<LoginScreen> {
           // Changes to `state` are applied in a single atomic update.
           state.loggingIn = true
           
-          // `store` is a mechanism for emitting output,
+          // Here, `store` (a `StoreAccess`) is a mechanism for emitting output,
           // and/or starting long-running tasks - i.e., "side-effects".
           store.runSideEffect { actions in
             // log in, then:
@@ -118,15 +118,15 @@ flowchart RL
 
 ### ViewModel
 
-Every store has an associated `ViewModel` which is automatically created by the store, and is accessed via `store.viewModel` (as seen in the above screen creation).
+Every store has an associated `ViewModel`, which is automatically created by the store, and is accessed via `store.viewModel` (as seen in the above screen creation).
 
-A `ViewModel` exposes `ViewState` and `ViewAction` to the view. These are scoped versions of a screen's `State` and `Action`. By default, `ViewState` == `State` and `ViewAction` == `Action`, but it's best to scope down to only what is needed
+A `ViewModel` exposes `ViewState` and `ViewAction` to the view. These are scoped versions of a screen's `State` and `Action`. By default, `ViewState` == `State` and `ViewAction` == `Action`, but it's best to scope down to only what is needed.
 
- `ViewModel` is unable to emit an `Output` - that is strictly the domain of the `Store`.
+ `ViewModel` excludes `Output` - that is strictly the domain of the `Store`.
 
 #### ViewAction
 
-Stores will use `Action`s to communicate within itself, as a serial message queue. Some of these message are semantically private to the store, and shouldn't be exposed to the view. E.g., in the `LoginScreen`, tapping login initiates along-running side effect that performs a log in, sending an `Action` message back to itself when that finishes.
+A store will use `Action`s to communicate within itself, as a serial message queue. Some of these message are semantically private to the store, and shouldn't be exposed to the view. E.g., in the `LoginScreen`, tapping login initiates a long-running side effect that performs a log in, sending an `Action` message back to itself when finished. This "finished logging in" message must not be available in the view layer.
 
 Use the `@ViewActions` and `@ViewAction` macros to declare what's in the `ViewAction`:
 
@@ -171,6 +171,8 @@ struct LoginScreenView: View {
 ```
 
 The view reads state through dynamic members, sends `ViewAction`s explicitly, and can bind writable view state through `$viewModel.state`.
+
+##### SwiftUI Previews
 
 For previews, use a detached view model for a static representation:
 
