@@ -109,16 +109,6 @@ public struct ViewActionsMacro: PeerMacro {
     }
 }
 
-public struct ViewActionMarkerMacro: PeerMacro {
-    public static func expansion(
-        of node: AttributeSyntax,
-        providingPeersOf declaration: some DeclSyntaxProtocol,
-        in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
-        []
-    }
-}
-
 private extension EnumCaseDeclSyntax {
     var isMarkedAsViewAction: Bool {
         attributes.contains { attribute in
@@ -126,7 +116,7 @@ private extension EnumCaseDeclSyntax {
                 return false
             }
 
-            return attributeSyntax.attributeName.trimmedDescription == "viewAction"
+            return attributeSyntax.attributeName.trimmedDescription == "ViewFacing"
         }
     }
 }

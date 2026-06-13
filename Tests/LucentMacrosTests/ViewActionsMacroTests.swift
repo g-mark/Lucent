@@ -10,10 +10,10 @@ final class ViewActionsMacroTests: XCTestCase {
             """
             @ViewActions
             enum Action {
-                @viewAction case viewDidAppear
+                @ViewFacing case viewDidAppear
                 case peopleLoaded(Result<[Person], Error>)
-                @viewAction case setName(name: String, age: Int)
-                @viewAction case personSelected(Person)
+                @ViewFacing case setName(name: String, age: Int)
+                @ViewFacing case personSelected(Person)
             }
             """,
             expandedSource: """
@@ -52,7 +52,7 @@ final class ViewActionsMacroTests: XCTestCase {
             """
             @ViewActions
             enum Action {
-                @viewAction case started, finished(result: Result<Void, Error>)
+                @ViewFacing case started, finished(result: Result<Void, Error>)
             }
             """,
             expandedSource: """
@@ -83,6 +83,6 @@ final class ViewActionsMacroTests: XCTestCase {
 
 private let testMacros: [String: Macro.Type] = [
     "ViewActions": ViewActionsMacro.self,
-    "viewAction": ViewActionMarkerMacro.self
+    "ViewFacing": ViewFacingMarkerMacro.self
 ]
 #endif

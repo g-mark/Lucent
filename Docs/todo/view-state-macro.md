@@ -19,9 +19,17 @@ struct State: Equatable {
     enum Phase: Equatable { ... }
 }
 
-struct ViewState: Equatable {
+public nonisolated struct ViewState: Equatable {
     let personId: Int
     let phase: State.Phase
+
+    public init(
+        personId: Int,
+        phase: State.Phase
+    ) {
+        self.personId = personId
+        self.phase = phase
+    }
 }
 
 static var viewStateProjection: StateProjection<State, ViewState> {
@@ -47,15 +55,15 @@ static var viewStateProjection: StateProjection<State, ViewState> {
 Two macros and one supporting enum work together:
 
 - **`ViewStateProjectedMutability`** — declared in the `Lucent` module, used as a macro argument
-- **`@viewState`** — marks a stored property in `State` for projection into `ViewState`, with optional mutability override
+- **`@ViewFacing`** — marks a stored property in `State` for projection into `ViewState`, with optional mutability override
 - **`@ViewState`** — applied to the `State` struct, generates `ViewState` and `viewStateProjection` as siblings
 
 ```swift
 @ViewState
 struct State: Equatable {
-    @viewState let personId: Int
+    @ViewFacing let personId: Int
     var personName: String
-    @viewState(.readOnly) var phase: Phase
+    @ViewFacing(.readOnly) var phase: Phase
 
     enum Phase: Equatable { ... }
 }
@@ -65,7 +73,7 @@ Because `@ViewState` is `@attached(peer)`, it generates declarations at the same
 
 ### Mutability rules for `ViewState` properties
 
-| `State` declaration | `@viewState` argument | `ViewState` declaration |
+| `State` declaration | `@ViewFacing` argument | `ViewState` declaration |
 |---|---|---|
 | `let x: T` | (any) | `let x: T` |
 | `var x: T` | _(none)_ or `.sameAsOriginal` | `var x: T` |
@@ -104,7 +112,9 @@ static var viewStateProjection: StateProjection<State, ViewState> {
 }
 ```
 
-`toState` uses `viewState.x` for every `@viewState`-marked property and `state.x` for every unmarked property, in declaration order to match the synthesized memberwise initializer.
+`toState` uses `viewState.x` for every `@ViewFacing`-marked property and `state.x` for every unmarked property, in declaration order to match the synthesized memberwise initializer.
+
+The generated `ViewState` has an explicit initializer. Parameters mirror the projected property list; a parameter receives a default only when the source property has a default value, or when the source property is optional and therefore defaults to `nil`. Non-default `State` properties remain required.
 
 ## Macro and Type Declarations
 
@@ -123,12 +133,12 @@ public enum ViewStateProjectedMutability: Sendable {
 public macro ViewState() = #externalMacro(module: "LucentMacros", type: "ViewStateMacro")
 
 @attached(peer)
-public macro viewState(
+public macro ViewFacing(
     _ mutability: ViewStateProjectedMutability = .sameAsOriginal
-) = #externalMacro(module: "LucentMacros", type: "ViewStatePropertyMarkerMacro")
+) = #externalMacro(module: "LucentMacros", type: "ViewFacingMarkerMacro")
 ```
 
-`ViewStateProjectedMutability` must live in `Lucent` (not the macro plugin) so that users can write `@viewState(.readOnly)` as a normal Swift expression with auto-complete. The macro reads it as syntax, not as a runtime value.
+`ViewStateProjectedMutability` must live in `Lucent` (not the macro plugin) so that users can write `@ViewFacing(.readOnly)` as a normal Swift expression with auto-complete. The macro reads it as syntax, not as a runtime value.
 
 ## Macro Implementation
 
@@ -225,7 +235,7 @@ public struct ViewStateMacro: PeerMacro {
     private static func findViewStateAttribute(in attributes: AttributeListSyntax) -> AttributeSyntax? {
         attributes.lazy.compactMap {
             guard case .attribute(let attr) = $0,
-                  attr.attributeName.trimmedDescription == "viewState"
+                  attr.attributeName.trimmedDescription == "ViewFacing"
             else { return nil }
             return attr
         }.first
@@ -302,9 +312,9 @@ public struct ViewStateMacro: PeerMacro {
     }
 }
 
-// MARK: - @viewState (marker only)
+// MARK: - @ViewFacing (marker only)
 
-public struct ViewStatePropertyMarkerMacro: PeerMacro {
+public struct ViewFacingMarkerMacro: PeerMacro {
     public static func expansion(
         of node: AttributeSyntax,
         providingPeersOf declaration: some DeclSyntaxProtocol,
@@ -325,7 +335,7 @@ public struct ViewStatePropertyMarkerMacro: PeerMacro {
 
 - **Conformances are mirrored.** The generated `ViewState` copies the inheritance clause from `State` (e.g., `: Equatable`). Since `ViewState` is a strict subset of `State`'s properties, if `State`'s properties satisfy a conformance, so will `ViewState`'s.
 
-- **Relationship to `@ViewActions`.** Both macros use `@attached(peer)` — applied to a type nested inside the screen definition, generating siblings at the screen level. The marker macros (`@viewState`, `@viewAction`) are both no-op `@attached(peer)` expansions read as syntax by their outer macro.
+- **Relationship to `@ViewActions`.** Both outer macros use `@attached(peer)` — applied to a type nested inside the screen definition, generating siblings at the screen level. The shared `@ViewFacing` marker is a no-op `@attached(peer)` expansion read as syntax by each outer macro.
 
 - **Setup**: Add a `LucentMacros` macro target to `Package.swift`. This requires `swift-syntax` as a package dependency:
 
@@ -364,7 +374,7 @@ public struct ViewStatePropertyMarkerMacro: PeerMacro {
   struct LucentMacrosPlugin: CompilerPlugin {
       let providingMacros: [Macro.Type] = [
           ViewStateMacro.self,
-          ViewStatePropertyMarkerMacro.self,
+          ViewFacingMarkerMacro.self,
       ]
   }
   ```

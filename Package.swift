@@ -48,6 +48,13 @@ let package = Package(
                 "LucentCore",
                 .product(name: "Evident", package: "Evident")
             ]
+        ),
+        .testTarget(
+            name: "LucentMacrosTests",
+            dependencies: [
+                "LucentMacros",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
+            ]
         )
     ]
 )

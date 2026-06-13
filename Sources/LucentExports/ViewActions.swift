@@ -5,9 +5,3 @@ public macro ViewActions() = #externalMacro(
     module: "LucentMacros",
     type: "ViewActionsMacro"
 )
-
-@attached(peer)
-public macro viewAction() = #externalMacro(
-    module: "LucentMacros",
-    type: "ViewActionMarkerMacro"
-)

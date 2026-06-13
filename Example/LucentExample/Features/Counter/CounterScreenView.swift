@@ -86,20 +86,21 @@ struct CounterScreenView: View {
     )
     CounterScreenView(
         viewModel: .previewable(
-            state: .init()
+            screenState: .init()
         )
     )
 }
 
 #Preview("Loading") {
-    @Previewable @State var store = CounterScreenStore(
-        state: .init(
-            count: 42,
-            fact: nil,
-            factIsLoading: true
+    CounterScreenView(
+        viewModel: .previewable(
+            screenState: .init(
+                count: 42,
+                fact: nil,
+                factIsLoading: true
+            )
         )
     )
-    CounterScreenView(viewModel: store.viewModel)
 }
 
 #Preview("Fact-based") {
