@@ -36,13 +36,23 @@ public struct ViewStateMacro: PeerMacro {
     }
 
     private static func collectNestedTypeNames(from structDecl: StructDeclSyntax) -> Set<String> {
-        Set(structDecl.memberBlock.members.compactMap { member -> String? in
-            member.decl.as(EnumDeclSyntax.self)?.name.text
-                ?? member.decl.as(StructDeclSyntax.self)?.name.text
-                ?? member.decl.as(ClassDeclSyntax.self)?.name.text
-                ?? member.decl.as(ActorDeclSyntax.self)?.name.text
-                ?? member.decl.as(TypeAliasDeclSyntax.self)?.name.text
-        })
+        var names: Set<String> = []
+
+        for member in structDecl.memberBlock.members {
+            if let enumDecl = member.decl.as(EnumDeclSyntax.self) {
+                names.insert(enumDecl.name.text)
+            } else if let structDecl = member.decl.as(StructDeclSyntax.self) {
+                names.insert(structDecl.name.text)
+            } else if let classDecl = member.decl.as(ClassDeclSyntax.self) {
+                names.insert(classDecl.name.text)
+            } else if let actorDecl = member.decl.as(ActorDeclSyntax.self) {
+                names.insert(actorDecl.name.text)
+            } else if let typeAliasDecl = member.decl.as(TypeAliasDeclSyntax.self) {
+                names.insert(typeAliasDecl.name.text)
+            }
+        }
+
+        return names
     }
 
     private static func collectStoredProperties(
