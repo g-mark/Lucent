@@ -36,15 +36,15 @@ The `ViewAction` and `toAction` are pure boilerplate derived directly from the m
 
 Two macros work together:
 
-- **`@viewAction`** — marks a case in `Action` as view-facing (marker only, generates nothing)
+- **`@ViewFacing`** — marks a case in `Action` as view-facing (marker only, generates nothing)
 - **`@ViewActions`** — applied to the `Action` enum, generates `ViewAction` and `toAction` as siblings
 
 ```swift
 @ViewActions
 enum Action {
-    @viewAction case viewDidAppear
+    @ViewFacing case viewDidAppear
     case peopleLoaded(Result<[Person], Error>)
-    @viewAction case personSelected(Person)
+    @ViewFacing case personSelected(Person)
 }
 ```
 
@@ -77,8 +77,12 @@ Place these in the `Lucent` module:
 macro ViewActions() = #externalMacro(module: "LucentMacros", type: "ViewActionsMacro")
 
 @attached(peer)
-macro viewAction() = #externalMacro(module: "LucentMacros", type: "ViewActionMarkerMacro")
+macro ViewFacing(
+    _ mutability: ViewStateProjectedMutability = .sameAsOriginal
+) = #externalMacro(module: "LucentMacros", type: "ViewFacingMarkerMacro")
 ```
+
+Action cases use `@ViewFacing` without arguments. The optional mutability argument is used by `@ViewState` when the same marker is attached to stored state properties.
 
 The `names:` argument on `@ViewActions` is required — Xcode needs to know the introduced names at parse time to support code completion and incremental builds.
 
@@ -119,7 +123,7 @@ public struct ViewActionsMacro: PeerMacro {
             guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { return nil }
             let isMarked = caseDecl.attributes.contains {
                 guard case .attribute(let attr) = $0 else { return false }
-                return attr.attributeName.trimmedDescription == "viewAction"
+                return attr.attributeName.trimmedDescription == "ViewFacing"
             }
             guard isMarked, let element = caseDecl.elements.first else { return nil }
             return CaseInfo(
@@ -169,9 +173,9 @@ public struct ViewActionsMacro: PeerMacro {
     }
 }
 
-// MARK: - @viewAction (marker only)
+// MARK: - @ViewFacing (marker only)
 
-public struct ViewActionMarkerMacro: PeerMacro {
+public struct ViewFacingMarkerMacro: PeerMacro {
     public static func expansion(
         of node: AttributeSyntax,
         providingPeersOf declaration: some DeclSyntaxProtocol,
@@ -182,8 +186,8 @@ public struct ViewActionMarkerMacro: PeerMacro {
 
 ## Notes
 
-- **Macro interaction**: `@ViewActions` reads `@viewAction` from the *pre-expansion* syntax tree, so the two macros don't interfere with each other.
-- **`@viewAction` as peer macro**: Declaring it as `@attached(peer)` causes the compiler to recognize and consume the attribute. Returning `[]` makes it a pure marker with no side effects.
+- **Macro interaction**: `@ViewActions` reads `@ViewFacing` from the *pre-expansion* syntax tree, so the two macros don't interfere with each other.
+- **`@ViewFacing` as peer macro**: Declaring it as `@attached(peer)` causes the compiler to recognize and consume the attribute. Returning `[]` makes it a pure marker with no side effects.
 - **Associated value labels**: Labeled params (e.g., `case foo(bar: Baz)`) are preserved correctly in both the `ViewAction` enum and the switch bindings.
 - **Setup**: Add a `LucentMacros` macro target to `Package.swift`. This requires `swift-syntax` as a package dependency:
 
@@ -222,7 +226,7 @@ public struct ViewActionMarkerMacro: PeerMacro {
   struct LucentMacrosPlugin: CompilerPlugin {
       let providingMacros: [Macro.Type] = [
           ViewActionsMacro.self,
-          ViewActionMarkerMacro.self,
+          ViewFacingMarkerMacro.self,
       ]
   }
   ```

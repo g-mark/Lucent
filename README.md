@@ -128,7 +128,7 @@ A `ViewModel` exposes `ViewState` and `ViewAction` to the view. These are scoped
 
 A store will use `Action`s to communicate within itself, as a serial message queue. Some of these message are semantically private to the store, and shouldn't be exposed to the view. E.g., in the `LoginScreen`, tapping login initiates a long-running side effect that performs a log in, sending an `Action` message back to itself when finished. This "finished logging in" message must not be available in the view layer.
 
-Use the `@ViewActions` and `@ViewAction` macros to declare what's in the `ViewAction`:
+Use `@ViewActions` on the screen's `Action` enum and mark view-sendable cases with `@ViewFacing`:
 
 ```swift
 enum LoginScreen: ScreenDefinition {
@@ -137,14 +137,32 @@ enum LoginScreen: ScreenDefinition {
   @ViewActions
   enum Action: Sendable {
     // available in the `ViewModel`:
-    @viewAction case userTappedLogin
+    @ViewFacing case userTappedLogin
     
     // private to the store:
     case userDidLogin
   }
+}
 ```
 
 #### ViewState
+
+Use `@ViewState` on the screen's `State` struct and mark view-visible properties with `@ViewFacing`:
+
+```swift
+enum LoginScreen: ScreenDefinition {
+  @ViewState
+  struct State: Equatable, Sendable {
+    @ViewFacing var username: String = ""
+    @ViewFacing var password: String = ""
+    @ViewFacing(.readOnly) var loggingIn: Bool = false
+
+    var sessionToken: String?
+  }
+}
+```
+
+The generated `ViewState` includes only the `@ViewFacing` properties. Writable `var` properties stay writable by default, while `@ViewFacing(.readOnly)` exposes a `var` from `State` as a `let` in `ViewState`. The generated initializer mirrors projected property defaults and leaves non-default properties as required parameters. Unmarked properties remain store-private and are preserved when view state is written back to screen state.
 
 ### Views
 
@@ -180,11 +198,13 @@ For previews, use a detached view model for a static representation:
 #Preview {
   LoginScreenView(
     viewModel: .previewable(
-      state: .init()
+      screenState: .init()
     )
-  }
-)
+  )
+}
 ```
+
+`screenState:` starts from the full screen state and applies the screen's `viewStateProjection`, so previews follow the same initialization rules as `State`. If `State` has required properties, pass them to `.init(...)` here.
 
 Or a `@Previewable` store if you want full store functionality:
 

@@ -86,10 +86,21 @@ public final class ViewModel<Screen: ScreenDefinition> {
 
 extension ViewModel {
 
-    /// Helper to reduce boilerplate in writing SwiftUI previews.
-    public static func previewable(state: Screen.ViewState) -> Self {
+    /// Helper to reduce boilerplate in previews when starting from full screen state.
+    public static func previewable(screenState: Screen.State) -> Self {
+        mock(
+            viewState: Screen.viewStateProjection.toViewState(screenState)
+        )
+    }
+
+    /// Creates a detached view model from already-projected view state.
+    ///
+    /// This is useful in tests. For SwiftUI previews backed by `@ViewState`,
+    /// prefer `previewable(screenState:)` so the preview body does not construct
+    /// macro-generated `ViewState` directly.
+    public static func mock(viewState: Screen.ViewState) -> Self {
         .init(
-            state: state,
+            state: viewState,
             sendAction: { _ in },
             sendState: { _ in }
         )

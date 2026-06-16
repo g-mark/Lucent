@@ -5,6 +5,7 @@ import SwiftSyntaxMacros
 struct LucentMacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         ViewActionsMacro.self,
-        ViewActionMarkerMacro.self
+        ViewStateMacro.self,
+        ViewFacingMarkerMacro.self
     ]
 }

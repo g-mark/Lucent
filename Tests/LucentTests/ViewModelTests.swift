@@ -101,22 +101,36 @@ struct ViewModelTests {
     }
 
     @MainActor
-    @Test func previewableUsesProvidedStateAndIgnoresActions() {
-        let viewModel = ViewModel<ViewModelTestScreen>.previewable(
-            state: .init(count: 9, title: "Preview")
+    @Test func mockUsesProvidedViewStateAndIgnoresActions() {
+        let viewModel = ViewModel<ViewModelTestScreen>.mock(
+            viewState: .init(count: 9, title: "Mock")
         )
 
-        #expect(viewModel.state == .init(count: 9, title: "Preview"))
+        #expect(viewModel.state == .init(count: 9, title: "Mock"))
         #expect(viewModel.count == 9)
 
         viewModel.send(action: .increment)
 
-        #expect(viewModel.state == .init(count: 9, title: "Preview"))
+        #expect(viewModel.state == .init(count: 9, title: "Mock"))
+    }
+
+    @MainActor
+    @Test func previewableProjectsProvidedScreenState() {
+        let viewModel = ViewModel<ViewModelTestScreen>.previewable(
+            screenState: .init(count: 7, title: "Projected")
+        )
+
+        #expect(viewModel.state == .init(count: 7, title: "Projected"))
+        #expect(viewModel.count == 7)
     }
 }
 
 private enum ViewModelTestScreen: ScreenDefinition {
-    struct State: Sendable { }
+    struct State: Sendable {
+        var count: Int
+        var title: String
+    }
+
     enum Action: Sendable {
         case ignored
     }
@@ -133,8 +147,8 @@ private enum ViewModelTestScreen: ScreenDefinition {
     }
 
     static let viewStateProjection = StateProjection<State, ViewState>(
-        toViewState: { _ in
-            ViewState(count: 0, title: "")
+        toViewState: { state in
+            ViewState(count: state.count, title: state.title)
         },
         toState: { _, state in
             state

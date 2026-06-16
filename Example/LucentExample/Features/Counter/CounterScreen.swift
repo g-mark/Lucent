@@ -9,21 +9,22 @@ import Lucent
 
 enum CounterScreen: ScreenDefinition {
 
+    @ViewState
     struct State: Equatable, Sendable {
-        var count = 0
-        var fact: String?
-        var factIsLoading = false
+        @ViewFacing(.readOnly) var count: Int = 0
+        @ViewFacing(.readOnly) var fact: String?
+        @ViewFacing(.readOnly) var factIsLoading: Bool = false
     }
 
     @ViewActions
     enum Action: Sendable {
-        // `@ViewAction` annotated cases are sendable by the view
-        @viewAction case decrementButtonTapped
-        @viewAction case incrementButtonTapped
-        @viewAction case factButtonTapped
+        // `@ViewFacing` annotated cases are sendable by the view
+        @ViewFacing case decrementButtonTapped
+        @ViewFacing case incrementButtonTapped
+        @ViewFacing case factButtonTapped
 
         // The view layer shouldn't be allowed to hijack the fact
-        // loading process, so this case isn't `@ViewAction`.
+        // loading process, so this case isn't `@ViewFacing`.
         case factLoaded(String)
     }
 
