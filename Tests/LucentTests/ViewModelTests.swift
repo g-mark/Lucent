@@ -39,9 +39,7 @@ struct ViewModelTests {
         viewModel.send(action: .increment)
         viewModel.send(action: .submit("Done"))
 
-        try await eventually {
-            actions.values == [.increment, .submit("Done")]
-        }
+        try await actions.waitForValues([.increment, .submit("Done")])
     }
 
     @MainActor

@@ -21,14 +21,15 @@ struct UIDatePickerBindingTests {
         let updatedDate = Date(timeIntervalSince1970: 2_000)
         let selectedDate = Date(timeIntervalSince1970: 3_000)
         let model = ObservableValueModel(value: initialDate)
-        let control = UIDatePicker(value: binding(to: model))
+        let bindingReads = LockedRecorder<Date>()
+        let control = UIDatePicker(value: binding(to: model) { bindingReads.append($0) })
 
+        try await bindingReads.waitForValue(initialDate)
         #expect(control.date == initialDate)
 
         model.value = updatedDate
-        try await eventually {
-            control.date == updatedDate
-        }
+        try await bindingReads.waitForValue(updatedDate)
+        #expect(control.date == updatedDate)
 
         control.date = selectedDate
         control.sendActions(for: .valueChanged)
@@ -47,9 +48,16 @@ private final class ObservableValueModel<Value> {
 }
 
 @MainActor
-private func binding<Value>(to model: ObservableValueModel<Value>) -> Binding<Value> {
+private func binding<Value>(
+    to model: ObservableValueModel<Value>,
+    onRead: ((Value) -> Void)? = nil
+) -> Binding<Value> {
     Binding(
-        get: { model.value },
+        get: {
+            let value = model.value
+            onRead?(value)
+            return value
+        },
         set: { model.value = $0 }
     )
 }

@@ -17,14 +17,15 @@ struct UITextFieldBindingTests {
     @MainActor
     @Test func bindingMirrorsBindingAndWritesEditingChangesBack() async throws {
         let model = ObservableValueModel(value: "Initial")
-        let control = UITextField(text: binding(to: model))
+        let bindingReads = LockedRecorder<String>()
+        let control = UITextField(text: binding(to: model) { bindingReads.append($0) })
 
+        try await bindingReads.waitForValue("Initial")
         #expect(control.text == "Initial")
 
         model.value = "Updated"
-        try await eventually {
-            control.text == "Updated"
-        }
+        try await bindingReads.waitForValue("Updated")
+        #expect(control.text == "Updated")
 
         control.text = "Typed"
         control.sendActions(for: .editingChanged)
@@ -43,9 +44,16 @@ private final class ObservableValueModel<Value> {
 }
 
 @MainActor
-private func binding<Value>(to model: ObservableValueModel<Value>) -> Binding<Value> {
+private func binding<Value>(
+    to model: ObservableValueModel<Value>,
+    onRead: ((Value) -> Void)? = nil
+) -> Binding<Value> {
     Binding(
-        get: { model.value },
+        get: {
+            let value = model.value
+            onRead?(value)
+            return value
+        },
         set: { model.value = $0 }
     )
 }

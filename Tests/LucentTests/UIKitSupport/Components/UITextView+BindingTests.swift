@@ -18,14 +18,15 @@ struct UITextViewBindingTests {
     @MainActor
     @Test func bindingMirrorsBindingAndWritesTextChangesBack() async throws {
         let model = ObservableValueModel(value: "Initial")
-        let control = UITextView(text: binding(to: model))
+        let bindingReads = LockedRecorder<String>()
+        let control = UITextView(text: binding(to: model) { bindingReads.append($0) })
 
+        try await bindingReads.waitForValue("Initial")
         #expect(control.text == "Initial")
 
         model.value = "Updated"
-        try await eventually {
-            control.text == "Updated"
-        }
+        try await bindingReads.waitForValue("Updated")
+        #expect(control.text == "Updated")
 
         control.text = "Typed"
         NotificationCenter.default.post(
@@ -42,11 +43,14 @@ struct UITextViewBindingTests {
         weak var weakOldModel: ObservableValueModel<String>?
         weakOldModel = oldModel
         let newModel = ObservableValueModel(value: "New")
-        let control = UITextView(text: binding(to: oldModel!))
+        let bindingReads = LockedRecorder<String>()
+        let control = UITextView(text: binding(to: oldModel!) { bindingReads.append($0) })
 
+        try await bindingReads.waitForValue("Old")
         #expect(control.text == "Old")
 
-        control.bind(text: binding(to: newModel))
+        control.bind(text: binding(to: newModel) { bindingReads.append($0) })
+        try await bindingReads.waitForValue("New")
         #expect(control.text == "New")
 
         oldModel?.value = "Old update"
@@ -54,9 +58,8 @@ struct UITextViewBindingTests {
         #expect(control.text == "New")
 
         newModel.value = "New update"
-        try await eventually {
-            control.text == "New update"
-        }
+        try await bindingReads.waitForValue("New update")
+        #expect(control.text == "New update")
 
         control.text = "Typed"
         NotificationCenter.default.post(
@@ -68,9 +71,8 @@ struct UITextViewBindingTests {
         #expect(newModel.value == "Typed")
 
         oldModel = nil
-        try await eventually {
-            weakOldModel == nil
-        }
+        await settleObservation()
+        #expect(weakOldModel == nil)
     }
 }
 
@@ -84,9 +86,16 @@ private final class ObservableValueModel<Value> {
 }
 
 @MainActor
-private func binding<Value>(to model: ObservableValueModel<Value>) -> Binding<Value> {
+private func binding<Value>(
+    to model: ObservableValueModel<Value>,
+    onRead: ((Value) -> Void)? = nil
+) -> Binding<Value> {
     Binding(
-        get: { model.value },
+        get: {
+            let value = model.value
+            onRead?(value)
+            return value
+        },
         set: { model.value = $0 }
     )
 }

@@ -21,24 +21,20 @@ struct LucentScreenObservationTests {
                 sendState: { _ in }
             )
         )
-        var values: [UIKitObservationScreen.ViewState] = []
+        let values = LockedRecorder<UIKitObservationScreen.ViewState>()
 
         screen.observe { viewState in
             values.append(viewState)
         }
 
-        try await eventually {
-            values == [.init(count: 1, title: "Initial")]
-        }
+        try await values.waitForValues([.init(count: 1, title: "Initial")])
 
         screen.viewModel.state = .init(count: 2, title: "Updated")
 
-        try await eventually {
-            values == [
-                .init(count: 1, title: "Initial"),
-                .init(count: 2, title: "Updated")
-            ]
-        }
+        try await values.waitForValues([
+            .init(count: 1, title: "Initial"),
+            .init(count: 2, title: "Updated")
+        ])
     }
 
     @MainActor
@@ -50,21 +46,17 @@ struct LucentScreenObservationTests {
                 sendState: { _ in }
             )
         )
-        var values: [String] = []
+        let values = LockedRecorder<String>()
 
         screen.observe(\.title) { title in
             values.append(title)
         }
 
-        try await eventually {
-            values == ["Initial"]
-        }
+        try await values.waitForValues(["Initial"])
 
         screen.viewModel.state = .init(count: 2, title: "Updated")
 
-        try await eventually {
-            values == ["Initial", "Updated"]
-        }
+        try await values.waitForValues(["Initial", "Updated"])
     }
 
     @MainActor

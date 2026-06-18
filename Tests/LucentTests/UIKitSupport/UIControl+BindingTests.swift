@@ -18,19 +18,23 @@ struct UIControlBindingTests {
     @Test func attachMirrorsBindingAndWritesControlChangesBack() async throws {
         let model = ObservableValueModel(value: 3)
         let control = TestControl()
+        let controlValues = LockedRecorder<Int>()
 
         control.attach(
             binding: binding(to: model),
             get: { control.value },
-            set: { control.value = $0 }
+            set: {
+                control.value = $0
+                controlValues.append($0)
+            }
         )
 
+        try await controlValues.waitForValues([3])
         #expect(control.value == 3)
 
         model.value = 4
-        try await eventually {
-            control.value == 4
-        }
+        try await controlValues.waitForValues([3, 4])
+        #expect(control.value == 4)
 
         control.value = 5
         control.sendActions(for: .valueChanged)
@@ -45,19 +49,28 @@ struct UIControlBindingTests {
         weakOldModel = oldModel
         let newModel = ObservableValueModel(value: 10)
         let control = TestControl()
+        let controlValues = LockedRecorder<Int>()
 
         control.attach(
             binding: binding(to: oldModel!),
             get: { control.value },
-            set: { control.value = $0 }
+            set: {
+                control.value = $0
+                controlValues.append($0)
+            }
         )
+        try await controlValues.waitForValues([1])
         #expect(control.value == 1)
 
         control.attach(
             binding: binding(to: newModel),
             get: { control.value },
-            set: { control.value = $0 }
+            set: {
+                control.value = $0
+                controlValues.append($0)
+            }
         )
+        try await controlValues.waitForValues([1, 10])
         #expect(control.value == 10)
 
         oldModel?.value = 2
@@ -65,9 +78,8 @@ struct UIControlBindingTests {
         #expect(control.value == 10)
 
         newModel.value = 11
-        try await eventually {
-            control.value == 11
-        }
+        try await controlValues.waitForValues([1, 10, 11])
+        #expect(control.value == 11)
 
         control.value = 12
         control.sendActions(for: .valueChanged)
@@ -76,9 +88,8 @@ struct UIControlBindingTests {
         #expect(newModel.value == 12)
 
         oldModel = nil
-        try await eventually {
-            weakOldModel == nil
-        }
+        await settleObservation()
+        #expect(weakOldModel == nil)
     }
 }
 

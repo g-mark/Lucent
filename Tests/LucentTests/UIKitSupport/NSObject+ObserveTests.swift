@@ -17,21 +17,17 @@ struct NSObjectObserveTests {
     @Test func observeRunsImmediatelyAndTracksChanges() async throws {
         let object = NSObject()
         let model = ObservableIntModel(value: 1)
-        var values: [Int] = []
+        let values = LockedRecorder<Int>()
 
         object.observe(identifier: "value") {
             values.append(model.value)
         }
 
-        try await eventually {
-            values == [1]
-        }
+        try await values.waitForValues([1])
 
         model.value = 2
 
-        try await eventually {
-            values == [1, 2]
-        }
+        try await values.waitForValues([1, 2])
     }
 
     @MainActor
@@ -39,32 +35,26 @@ struct NSObjectObserveTests {
         let object = NSObject()
         let firstModel = ObservableIntModel(value: 1)
         let secondModel = ObservableIntModel(value: 10)
-        var firstValues: [Int] = []
-        var secondValues: [Int] = []
+        let firstValues = LockedRecorder<Int>()
+        let secondValues = LockedRecorder<Int>()
 
         object.observe(identifier: "value") {
             firstValues.append(firstModel.value)
         }
 
-        try await eventually {
-            firstValues == [1]
-        }
+        try await firstValues.waitForValues([1])
 
         object.observe(identifier: "value") {
             secondValues.append(secondModel.value)
         }
 
-        try await eventually {
-            secondValues == [10]
-        }
+        try await secondValues.waitForValues([10])
 
         firstModel.value = 2
         secondModel.value = 11
 
-        try await eventually {
-            secondValues == [10, 11]
-        }
-        #expect(firstValues == [1])
+        try await secondValues.waitForValues([10, 11])
+        #expect(firstValues.values == [1])
     }
 }
 
